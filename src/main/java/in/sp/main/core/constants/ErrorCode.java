@@ -1,0 +1,11 @@
+package in.sp.main.core.constants;
+
+public enum ErrorCode {
+    ORDER_INVALID_STATE,
+    UNAUTHORIZED_ACCESS,
+    RESOURCE_NOT_FOUND,
+    VALIDATION_FAILED,
+    DOUBLE_PAYMENT_ATTEMPT,
+    BAD_CREDENTIALS,
+    INTERNAL_SERVER_ERROR
+}
