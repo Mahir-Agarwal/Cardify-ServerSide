@@ -24,29 +24,29 @@ public class OrderController {
     @PutMapping("/{id}/accept")
     public ResponseEntity<OrderResponseDTO> acceptOrder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.acceptOrder(userDetails.getId(), id));
     }
 
     @PostMapping("/{id}/pay")
     public ResponseEntity<OrderResponseDTO> payForOrder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.payForOrder(userDetails.getId(), id));
     }
 
     @PutMapping("/{id}/place")
     public ResponseEntity<OrderResponseDTO> placeExternalOrder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long id,
-            @RequestParam String externalOrderId) {
+            @PathVariable("id") Long id,
+            @RequestParam("externalOrderId") String externalOrderId) {
         return ResponseEntity.ok(orderService.placeOrder(userDetails.getId(), id, externalOrderId));
     }
 
     @PutMapping("/{id}/confirm")
     public ResponseEntity<OrderResponseDTO> confirmDelivery(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.markDeliveredAndComplete(userDetails.getId(), id));
     }
 }

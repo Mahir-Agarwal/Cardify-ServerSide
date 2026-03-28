@@ -23,19 +23,26 @@ public class CardController {
         return ResponseEntity.ok(cardService.addCard(userDetails.getId(), request));
     }
 
-    @GetMapping
+    @GetMapping("/search")
     public ResponseEntity<Page<CardResponse>> searchCards(
-            @RequestParam(required = false) String bankName,
-            @RequestParam(required = false) CardType cardType,
-            @RequestParam(required = false) Boolean isAvailable,
+            @RequestParam(value = "bankName", required = false) String bankName,
+            @RequestParam(value = "cardType", required = false) CardType cardType,
+            @RequestParam(value = "isAvailable", required = false) Boolean isAvailable,
             Pageable pageable) {
         return ResponseEntity.ok(cardService.searchCards(bankName, cardType, isAvailable, pageable));
+    }
+
+    @GetMapping("/my-cards")
+    public ResponseEntity<Page<CardResponse>> getMyCards(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            Pageable pageable) {
+        return ResponseEntity.ok(cardService.getMyCards(userDetails.getId(), pageable));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CardResponse> updateCard(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody CardRequest request) {
         return ResponseEntity.ok(cardService.updateCard(userDetails.getId(), id, request));
     }
@@ -43,7 +50,7 @@ public class CardController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCard(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
         cardService.deleteCard(userDetails.getId(), id);
         return ResponseEntity.noContent().build();
     }

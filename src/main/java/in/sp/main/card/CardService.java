@@ -42,6 +42,10 @@ public class CardService {
         return cardRepository.searchCards(bankName, cardType, isAvailable, pageable).map(this::mapToDTO);
     }
 
+    public Page<CardResponse> getMyCards(Long userId, Pageable pageable) {
+        return cardRepository.findByOwnerId(userId, pageable).map(this::mapToDTO);
+    }
+
     @Transactional
     public CardResponse updateCard(Long userId, Long cardId, CardRequest request) {
         Card card = cardRepository.findById(cardId)

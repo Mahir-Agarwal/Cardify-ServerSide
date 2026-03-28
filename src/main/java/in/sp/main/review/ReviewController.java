@@ -17,7 +17,7 @@ public class ReviewController {
     @PostMapping("/{orderId}")
     public ResponseEntity<ReviewResponse> submitReview(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long orderId,
+            @PathVariable("orderId") Long orderId,
             @Valid @RequestBody ReviewRequest request) {
         return ResponseEntity.ok(reviewService.submitReview(userDetails.getId(), orderId, request));
     }

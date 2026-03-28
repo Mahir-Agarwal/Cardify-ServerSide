@@ -19,7 +19,7 @@ public class ChatController {
     @PostMapping("/{orderId}")
     public ResponseEntity<ChatResponse> sendMessage(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long orderId,
+            @PathVariable("orderId") Long orderId,
             @Valid @RequestBody ChatRequest request) {
         return ResponseEntity.ok(chatService.sendMessage(userDetails.getId(), orderId, request));
     }
@@ -27,7 +27,7 @@ public class ChatController {
     @GetMapping("/{orderId}")
     public ResponseEntity<List<ChatResponse>> getOrderMessages(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long orderId) {
+            @PathVariable("orderId") Long orderId) {
         return ResponseEntity.ok(chatService.getOrderMessages(userDetails.getId(), orderId));
     }
 }

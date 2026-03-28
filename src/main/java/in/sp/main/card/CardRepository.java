@@ -17,4 +17,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
             @Param("cardType") CardType cardType,
             @Param("isAvailable") Boolean isAvailable,
             Pageable pageable);
+
+    Page<Card> findByOwnerId(Long ownerId, Pageable pageable);
 }
