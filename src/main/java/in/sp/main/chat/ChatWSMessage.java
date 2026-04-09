@@ -1,8 +1,10 @@
 package in.sp.main.chat;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ChatWSMessage {
     private String type; // TEXT, OFFER, ANSWER, ICE_CANDIDATE
     private Long orderId;

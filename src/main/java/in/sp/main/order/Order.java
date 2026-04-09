@@ -31,7 +31,7 @@ public class Order extends BaseEntity {
     private Card card;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private OrderStatus status = OrderStatus.REQUESTED;
 
     @Column(nullable = false)

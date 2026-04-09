@@ -95,7 +95,7 @@ public class OrderServiceTest {
 
     @Test
     void testAcceptOrder_Failure_InvalidState() {
-        order.setStatus(OrderStatus.PAID);
+        order.setStatus(OrderStatus.ESCROW_FUNDED);
         when(orderRepository.findById(100L)).thenReturn(Optional.of(order));
 
         CustomException exception = assertThrows(CustomException.class, () -> {
@@ -107,14 +107,14 @@ public class OrderServiceTest {
 
     @Test
     void testPayForOrder_Failure_AlreadyPaid() {
-        order.setStatus(OrderStatus.PAID);
+        order.setStatus(OrderStatus.ESCROW_FUNDED);
         when(orderRepository.findById(100L)).thenReturn(Optional.of(order));
 
         CustomException exception = assertThrows(CustomException.class, () -> {
             orderService.payForOrder(1L, 100L); // Buyer tries to pay again
         });
 
-        assertEquals("Order is already paid", exception.getMessage());
+        assertEquals("Order is already funded", exception.getMessage());
     }
 
     @Test

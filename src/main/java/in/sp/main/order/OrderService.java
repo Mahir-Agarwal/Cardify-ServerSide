@@ -65,20 +65,32 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderResponseDTO confirmInfo(Long ownerId, Long orderId) {
+        Order order = getOrderAndValidateOwnership(orderId, ownerId, false);
+
+        if (order.getStatus() != OrderStatus.ACCEPTED) {
+            throw new CustomException(ErrorCode.ORDER_INVALID_STATE, "Order must be in ACCEPTED state to confirm info", HttpStatus.BAD_REQUEST);
+        }
+
+        order.setStatus(OrderStatus.INFO_CONFIRMED);
+        return mapToDTO(orderRepository.save(order));
+    }
+
+    @Transactional
     public OrderResponseDTO payForOrder(Long buyerId, Long orderId) {
         Order order = getOrderAndValidateOwnership(orderId, buyerId, true);
 
-        if (order.getStatus() == OrderStatus.PAID) {
-            throw new CustomException(ErrorCode.DOUBLE_PAYMENT_ATTEMPT, "Order is already paid", HttpStatus.CONFLICT);
+        if (order.getStatus() == OrderStatus.ESCROW_FUNDED) {
+            throw new CustomException(ErrorCode.DOUBLE_PAYMENT_ATTEMPT, "Order is already funded", HttpStatus.CONFLICT);
         }
         
-        if (order.getStatus() != OrderStatus.ACCEPTED) {
-            throw new CustomException(ErrorCode.ORDER_INVALID_STATE, "Order must be in ACCEPTED state to pay", HttpStatus.BAD_REQUEST);
+        if (order.getStatus() != OrderStatus.INFO_CONFIRMED) {
+            throw new CustomException(ErrorCode.ORDER_INVALID_STATE, "Order must be in INFO_CONFIRMED state to pay", HttpStatus.BAD_REQUEST);
         }
 
         // Simulate Escrow Payment
         paymentService.processBuyerPayment(order);
-        order.setStatus(OrderStatus.PAID);
+        order.setStatus(OrderStatus.ESCROW_FUNDED);
         return mapToDTO(orderRepository.save(order));
     }
 
@@ -86,8 +98,8 @@ public class OrderService {
     public OrderResponseDTO placeOrder(Long ownerId, Long orderId, String externalOrderId) {
         Order order = getOrderAndValidateOwnership(orderId, ownerId, false);
 
-        if (order.getStatus() != OrderStatus.PAID) {
-            throw new CustomException(ErrorCode.ORDER_INVALID_STATE, "Order must be in PAID state to place external order", HttpStatus.BAD_REQUEST);
+        if (order.getStatus() != OrderStatus.ESCROW_FUNDED) {
+            throw new CustomException(ErrorCode.ORDER_INVALID_STATE, "Order must be funded before placing external order", HttpStatus.BAD_REQUEST);
         }
 
         order.setExternalOrderId(externalOrderId);
@@ -99,8 +111,8 @@ public class OrderService {
     public OrderResponseDTO markDeliveredAndComplete(Long buyerId, Long orderId) {
         Order order = getOrderAndValidateOwnership(orderId, buyerId, true);
 
-        if (order.getStatus() != OrderStatus.ORDER_PLACED && order.getStatus() != OrderStatus.DELIVERED) {
-            throw new CustomException(ErrorCode.ORDER_INVALID_STATE, "Order must be placed or delivered to complete", HttpStatus.BAD_REQUEST);
+        if (order.getStatus() != OrderStatus.ORDER_PLACED) {
+            throw new CustomException(ErrorCode.ORDER_INVALID_STATE, "Order must be in ORDER_PLACED state to complete", HttpStatus.BAD_REQUEST);
         }
 
         order.setStatus(OrderStatus.COMPLETED);
@@ -108,6 +120,23 @@ public class OrderService {
         // Release Escrow Payment to Owner & Platform
         paymentService.releasePaymentToOwner(order);
 
+        return mapToDTO(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderResponseDTO disputeOrder(Long userId, Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND, "Order not found", HttpStatus.NOT_FOUND));
+
+        if (!order.getBuyer().getId().equals(userId) && !order.getOwner().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS, "You do not have permission to dispute this order", HttpStatus.FORBIDDEN);
+        }
+
+        if (order.getStatus() != OrderStatus.ORDER_PLACED && order.getStatus() != OrderStatus.DELIVERED) {
+            throw new CustomException(ErrorCode.ORDER_INVALID_STATE, "Order can only be disputed after being placed", HttpStatus.BAD_REQUEST);
+        }
+
+        order.setStatus(OrderStatus.DISPUTED);
         return mapToDTO(orderRepository.save(order));
     }
 

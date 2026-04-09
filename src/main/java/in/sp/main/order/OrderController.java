@@ -30,6 +30,13 @@ public class OrderController {
         return ResponseEntity.ok(orderService.acceptOrder(userDetails.getId(), id));
     }
 
+    @PutMapping("/{id}/confirm-info")
+    public ResponseEntity<OrderResponseDTO> confirmInfo(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable("id") Long id) {
+        return ResponseEntity.ok(orderService.confirmInfo(userDetails.getId(), id));
+    }
+
     @PostMapping("/{id}/pay")
     public ResponseEntity<OrderResponseDTO> payForOrder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -45,11 +52,18 @@ public class OrderController {
         return ResponseEntity.ok(orderService.placeOrder(userDetails.getId(), id, externalOrderId));
     }
 
-    @PutMapping("/{id}/confirm")
+    @PutMapping("/{id}/delivered")
     public ResponseEntity<OrderResponseDTO> confirmDelivery(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.markDeliveredAndComplete(userDetails.getId(), id));
+    }
+
+    @PutMapping("/{id}/dispute")
+    public ResponseEntity<OrderResponseDTO> disputeOrder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable("id") Long id) {
+        return ResponseEntity.ok(orderService.disputeOrder(userDetails.getId(), id));
     }
 
     @GetMapping("/my-orders")
