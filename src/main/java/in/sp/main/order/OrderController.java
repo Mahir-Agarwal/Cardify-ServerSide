@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -48,5 +50,11 @@ public class OrderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.markDeliveredAndComplete(userDetails.getId(), id));
+    }
+
+    @GetMapping("/my-orders")
+    public ResponseEntity<List<OrderResponseDTO>> getMyOrders(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(orderService.getOrdersForUser(userDetails.getId()));
     }
 }

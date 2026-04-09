@@ -13,6 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -104,6 +109,20 @@ public class OrderService {
         paymentService.releasePaymentToOwner(order);
 
         return mapToDTO(orderRepository.save(order));
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponseDTO> getOrdersForUser(Long userId) {
+        List<Order> ordersAsBuyer = orderRepository.findByBuyerId(userId);
+        List<Order> ordersAsOwner = orderRepository.findByOwnerId(userId);
+        
+        Set<Order> allOrders = new HashSet<>();
+        allOrders.addAll(ordersAsBuyer);
+        allOrders.addAll(ordersAsOwner);
+        
+        return allOrders.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     private Order getOrderAndValidateOwnership(Long orderId, Long userId, boolean isBuyer) {
